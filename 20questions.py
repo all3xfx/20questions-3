@@ -1,3 +1,4 @@
+from random import randint
 class Mystery(object):
 	
 	def __init__(self, noun, adjective, verb):
@@ -10,19 +11,30 @@ class Mystery(object):
 			nouns = []
 			nouns = (thing.nouns)  #should this be self.nouns??
 			if word in nouns:
-				print "____;-)____;-)____;-)____\nYes, it is a %s" % word
+				print "Yes, it is a %s" % word
 				exit("you win")
 			else:
-				print "No, it is not a %s" % word
 				wrong.add_answer(word)
 				fdbk.reply(wrong) # calculates some cool, dynamic feedback
 				wrong.show()
-				thing.play()	
+				thing.play()
+		elif type == "verb":
+			verbs = []
+			verbs = (thing.verbs)
+			if word in verbs:
+				print "Yes, it does %s" % word
+				thing.play()
+			else:
+				print "It may or may not %s" % word
+				wrong.add_answer(word)
+				fdbk.reply(wrong) # calculates some cool, dynamic feedback
+				wrong.show()
+				thing.play()
 		elif type == "adjective":
 			adjectives = []
 			adjectives = (thing.adjectives)
 			if word in adjectives:
-				print "____;-)____;-)____;-)____\nYes, it is %s" % word
+				print "Yes, it is %s" % word
 				thing.play()
 			else:
 				wrong.add_answer(word)  #adds wrong answer to list
@@ -53,29 +65,55 @@ class Mystery(object):
 			guess = guess.split(" ")
 			word = guess[-1]
 			thing.user_guess(word, "adjective")
+		elif "does it" in guess:
+			guess = guess.split(" ")
+			word = guess[-1]
+			thing.user_guess(word, "verb")
 		elif guess == "#hint":
 			fdbk.hint()
 		else:
-			print "I'm not saying it is, but I'm not saying it isn't"
+			print "I don't recognize your question"
 			thing.play()
 class Feedback(object):
 	def __init__(self):
 		pass
 	def reply(self, wrong):  #pass it the list of wrong answers, it will determine how to reply
-		print "nope %d" % len(wrong.answers)
-		if len(wrong.answers) in [2, 4, 6]:
+		print "nope"
+		if len(wrong.answers) in [8, 10, 12]:
 			help = raw_input("Want a hint? (Y/N)")
+			print "----------------" 
 			if help == "Y" or "y":
 				self.hint()
 			else:
-				pass
-		elif len(wrong.answers) == 8:
+				thing.play()
+		elif len(wrong.answers) == 14:
 			print "OKAY, I'LL STOP ASKING.  TYPE #HINT IF YOU WANT HELP"
+		elif len(wrong.answers) == 3:
+			self.suggestions('adj')
+		elif len(wrong.answers) ==6:
+			self.suggestions('verbs')
 		else:
-			pass
-			
+			thing.play()
+	def suggestions(self, type):
+		random_adjectives = []
+		for i in range(0,4):
+			random_adjectives.append(mystery_list[randint(0,8)][type][0])
+		print "here are a few adjectives you might inquire about: %s" % random_adjectives
+		
 	def hint(self):
-		pass
+		i = randint(0,3)
+		j = randint(0,2)
+		if i == 0:
+			print "it is %s" % thing.adjectives[j]
+			thing.play()
+		elif i == 1:
+			print "it can %s" % thing.verbs[j]
+			thing.play()
+		elif i == 2:
+			print "it is %d letters long" % len(thing.nouns)
+		else:
+			print "it starts with a %s" % thing.nouns[0]	
+			thing.play()
 	
 		
 		
@@ -88,11 +126,23 @@ class Answers(object):
 		print "Things it is not: %s" % self.answers #for a in self.answers:
 		#	print "%s it is not\n" % a
 	
-	
-		
-frog = Mystery("frog","green","jump")
+mystery_list = [
+{"name":"frog","adj":["green", "soft", "slimy"], "verbs":["jump", "grow", "swim"]},
+{"name":"cat", "adj":["soft", "furry", "quiet"], "verbs":["jump", "grow", "fall"]},
+{"name":"plane", "adj":["loud", "fast", "big"], "verbs":["fly", "run", "land"]},
+{"name":"bird", "adj":["soft", "fast", "small"], "verbs":["fly", "land", "grow"]},
+{"name":"tree", "adj":["green", "big", "brown"], "verbs":["grow", "sway", "fall"]},
+{"name":"building", "adj":["big", "hard", "square"], "verbs":["open", "close", "fall"]},
+{"name":"cup", "adj":["round", "square", "small"], "verbs":["holds", "hangs", "contains"]},
+{"name":"book", "adj":["flat", "square", "long"], "verbs":["sits", "contains", "burns"]},
+{"name":"tire", "adj":["round", "hard", "black"], "verbs":["rolls", "turns", "sits"]},]	
+
+adjectives = ["green", "soft", "slimy","soft", "furry", "quiet", "loud", "fast", "big"]
+
+an_object_index = randint(0, len(mystery_list[-1]))
+an_object = Mystery(mystery_list[an_object_index]["name"], mystery_list[an_object_index]["adj"], mystery_list[an_object_index]["verbs"])
 right = Answers()
 wrong = Answers()
 fdbk = Feedback()
-thing = frog
+thing = an_object
 thing.play()
